@@ -1,114 +1,576 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Blood Bank</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Proactive Blood Management System - Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <style>
-        :root { --bg: #1a1d23; --card: #252830; --sidebar: #1e2128; --accent: #c0392b; --accent-hover: #a93226; --text: #ecf0f1; --text-muted: #95a5a6; --border: #34495e; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-        .layout { display: flex; min-height: 100vh; }
-        .sidebar { width: 220px; background: var(--sidebar); padding: 24px 0; }
-        .sidebar a { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: var(--text-muted); text-decoration: none; transition: all 0.2s; }
-        .sidebar a:hover, .sidebar a.active { color: var(--accent); background: rgba(192, 57, 43, 0.1); }
-        .sidebar .icon { width: 20px; height: 20px; background: var(--border); border-radius: 4px; opacity: 0.7; }
-        .content-area { flex: 1; display: flex; flex-direction: column; }
-        .header { padding: 20px 32px; border-bottom: 1px solid var(--border); }
-        .header h1 { font-size: 1.5rem; font-weight: 600; }
-        .main { flex: 1; padding: 24px 32px; overflow: auto; }
-        /* Blank monitoring blocks */
-        .blocks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-        .block { background: var(--card); border-radius: 12px; border: 1px solid var(--border); min-height: 160px; }
-        .block-title { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; padding: 16px 20px; border-bottom: 1px solid var(--border); text-transform: uppercase; }
-        .block-content { padding: 20px; min-height: 100px; }
-        .block.blank .block-content { background: var(--bg); }
-        .trigger-wrap { margin-top: 24px; }
-        .btn-trigger { padding: 14px 28px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; }
-        .btn-trigger:hover { background: var(--accent-hover); }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }
-        .btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
-        form { display: inline; }
+        :root {
+            --bg-color: #0f1115;
+            --panel-bg: #161920;
+            --text-color: #ecf0f1;
+            --accent-red: #ff3b30;
+            --accent-cyan: #00d2d3;
+            --accent-orange: #ff9f43;
+            --border-color: #2c3e50;
+            --grid-line: #232830;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Chakra Petch', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: rgba(22, 25, 32, 0.95);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            padding: 20px 0;
+            z-index: 10;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            color: #95a5a6;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: var(--accent-red);
+            background: rgba(255, 59, 48, 0.1);
+            border-left: 3px solid var(--accent-red);
+        }
+
+        .nav-item.logout {
+            margin-top: auto;
+            border: 1px solid var(--accent-red);
+            border-radius: 20px;
+            margin: 20px;
+            justify-content: center;
+            padding: 10px;
+        }
+        
+        form.logout-form {
+             width: 100%;
+             padding: 0 20px;
+             margin-top: 20px;
+        }
+        
+        button.logout-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Chakra Petch', sans-serif;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        
+        button.logout-btn:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px 40px;
+            overflow-y: auto;
+            background-image:
+                linear-gradient(rgba(35, 40, 48, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(35, 40, 48, 0.3) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 20px;
+            max-width: 1400px;
+        }
+
+        /* Panels */
+        .panel {
+            background: rgba(22, 25, 32, 0.8);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 210, 211, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .panel-header {
+            font-size: 0.9rem;
+            color: #ecf0f1;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 210, 211, 0.3);
+            padding-bottom: 8px;
+        }
+
+        /* Blood Stock Panel */
+        .blood-stock-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .stock-card {
+            background: #1e232b;
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+            position: relative;
+        }
+        
+        .stock-card.critical {
+             border: 1px solid var(--accent-red);
+             box-shadow: 0 0 10px rgba(255, 59, 48, 0.2);
+        }
+
+        .stock-type {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stock-count {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+        
+        .stock-bar {
+            width: 100%;
+            height: 20px;
+            background: #2c3e50;
+            margin-top: 8px;
+            position: relative;
+            border-radius: 2px; 
+            overflow: hidden;
+        }
+        
+        .stock-bar-fill {
+            height: 100%;
+            background: #bdc3c7;
+        }
+        
+        .stock-card.critical .stock-bar-fill {
+            background: var(--accent-red);
+        }
+
+        /* Temperature Panel */
+        .temp-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Weight Panel */
+        .weight-display {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+            text-shadow: 0 0 20px rgba(255, 159, 67, 0.3);
+        }
+
+        .depletion-text {
+            color: var(--accent-red);
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Table Panel */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: center; /* Centered as per image */
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        th {
+            color: #95a5a6;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-critical {
+            color: var(--accent-red);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-sufficient {
+            color: #2ecc71;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        /* Controls */
+        .controls-row {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+            background: rgba(22, 25, 32, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #34495e;
+        }
+
+        .slider-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .slider-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #95a5a6;
+            margin-bottom: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            background: #2c3e50;
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-orange);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 159, 67, 0.5);
+        }
+
+        .refill-btn {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 15px rgba(255, 59, 48, 0.4);
+        }
+
+        .refill-btn:hover {
+            background: #ff5247;
+            box-shadow: 0 0 25px rgba(255, 59, 48, 0.6);
+        }
+        
         /* Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-overlay.show { display: flex; }
-        .modal-dialog { background: var(--card); border-radius: 12px; max-width: 520px; width: 90%; max-height: 80vh; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-        .modal-header { background: #2980b9; color: white; padding: 16px 24px; font-weight: 600; font-size: 1rem; }
-        .modal-body { padding: 20px; max-height: 400px; overflow-y: auto; }
-        .modal-body table { width: 100%; border-collapse: collapse; }
-        .modal-body th, .modal-body td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        .modal-body th { color: var(--text-muted); font-size: 0.85rem; }
-        .modal-footer { padding: 16px 24px; text-align: right; border-top: 1px solid var(--border); }
-        .modal-empty { color: var(--text-muted); padding: 24px; text-align: center; }
+         /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-dialog {
+            background: #161920;
+            border: 1px solid var(--accent-cyan);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(0, 210, 211, 0.2);
+            color: white;
+        }
+
+        .modal-header {
+            background: rgba(0, 210, 211, 0.1);
+            color: var(--accent-cyan);
+            padding: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+             padding: 20px;
+             border-top: 1px solid var(--border-color);
+             text-align: right;
+        }
+        
+        .btn-ok {
+            background: var(--accent-cyan);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Specific Grid Assignments */
+        .area-stock { grid-column: 1; grid-row: 1; min-height: 220px; }
+        .area-temp { grid-column: 2; grid-row: 1; min-height: 220px; }
+        .area-weight { grid-column: 1; grid-row: 2; min-height: 220px; }
+        .area-table { grid-column: 2; grid-row: 2; min-height: 220px; }
+
     </style>
 </head>
+
 <body>
-    <div class="layout">
-        <aside class="sidebar">
-            <a href="/dashboard" class="active"><span class="icon"></span>Dashboard</a>
-            <a href="/donors"><span class="icon"></span>Donor List</a>
-            <a href="/profile"><span class="icon"></span>Profile</a>
-            <form th:action="@{/logout}" method="post" style="margin-top: 24px; padding: 0 24px;">
-                <button type="submit" class="btn btn-outline" style="width: 100%;">Logout</button>
-            </form>
-        </aside>
-        <div class="content-area">
-            <header class="header"><h1>Monitoring Dashboard</h1></header>
-            <main class="main">
-                <!-- Blank blocks for blood maintenance (not measured yet) -->
-                <div class="blocks-grid">
-                    <div class="block blank">
-                        <div class="block-title">Blood Stock</div>
-                        <div class="block-content"></div>
-                    </div>
-                    <div class="block blank">
-                        <div class="block-title">Temperature</div>
-                        <div class="block-content"></div>
-                    </div>
-                    <div class="block blank">
-                        <div class="block-title">Weight</div>
-                        <div class="block-content"></div>
-                    </div>
-                    <div class="block blank">
-                        <div class="block-title">Blood Pack Available / Required</div>
-                        <div class="block-content"></div>
-                    </div>
-                </div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="/dashboard" class="nav-item active">Dashboard</a>
+        <a href="/donors" class="nav-item">Donor List</a>
+        <a href="/profile" class="nav-item">Profile</a>
+        
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
 
-                <div class="trigger-wrap">
-                    <button type="button" class="btn-trigger" onclick="document.getElementById('donorModal').classList.add('show')">Weight Limit Reached — Start Donor Recruitment</button>
-                </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header-title">Proactive Blood Management System - Command Center</div>
 
-                <!-- Eligible Donors Popup -->
-                <div id="donorModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('show')">
-                    <div class="modal-dialog" onclick="event.stopPropagation()">
-                        <div class="modal-header">ELIGIBLE DONORS FOUND</div>
-                        <div class="modal-body">
-                            <table th:if="${!eligibleDonors.isEmpty()}">
-                                <thead><tr><th>Name</th><th>Blood Type</th><th>Last Donation Date</th></tr></thead>
-                                <tbody>
-                                    <tr th:each="donor : ${eligibleDonors}">
-                                        <td th:text="${donor.name}"></td>
-                                        <td th:text="${donor.bloodGroup}"></td>
-                                        <td th:text="${donor.lastDonationDate}"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <p th:if="${eligibleDonors.isEmpty()}" class="modal-empty">No eligible donors found.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-trigger" onclick="document.getElementById('donorModal').classList.remove('show')">OK</button>
+        <div class="dashboard-grid">
+            <!-- Blood Stock -->
+            <div class="panel area-stock">
+                <div class="panel-header">Blood Stock (Available)</div>
+                <div class="blood-stock-grid">
+                    <div class="stock-card" th:each="stock : ${bloodStocks}" th:classappend="${stock.availableUnits < stock.requiredUnits} ? 'critical' : ''">
+                        <div class="stock-type" th:text="${stock.bloodGroup}">O+</div>
+                        <div class="stock-count" th:text="${stock.availableUnits}">50</div>
+                        <div class="stock-bar">
+                             <!-- Max width 100%, calculated width relative to required or max -->
+                            <div class="stock-bar-fill" th:style="'width:' + ${(stock.availableUnits * 1.0 / (stock.requiredUnits + 20)) * 100} + '%'"></div>
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
+
+            <!-- Temperature -->
+            <div class="panel area-temp">
+                <div class="panel-header">Temperature</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; height: 100%;">
+                     <div class="temp-display">4.2°C</div>
+                     <div style="width: 60%; height: 100px;">
+                        <canvas id="tempChart"></canvas>
+                     </div>
+                </div>
+            </div>
+
+            <!-- Weight -->
+            <div class="panel area-weight">
+                <div class="panel-header">Weight (Grams)</div>
+                <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                    <div class="weight-display"><span id="weightValue" th:text="${storageUnit != null ? storageUnit.currentWeight : '120.0'}">120.0</span>g</div>
+                    <div class="depletion-text" id="depletionText">PREDICTIVE DEPLETION: 00:08:45<br>until zero stock.</div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="panel area-table">
+                <div class="panel-header">Blood Pack Available / Required</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Blood Type</th>
+                                <th>Available</th>
+                                <th>Required</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="stock : ${bloodStocks}">
+                                <td th:text="${stock.bloodGroup}">A+</td>
+                                <td th:text="${stock.availableUnits}">30</td>
+                                <td th:text="${stock.requiredUnits}">24</td>
+                                <td>
+                                    <span th:if="${stock.availableUnits >= stock.requiredUnits}" class="status-sufficient">Sufficient</span>
+                                    <span th:if="${stock.availableUnits < stock.requiredUnits}" class="status-critical">Critical</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls-row">
+                <div class="slider-container">
+                    <div class="slider-label">Simulated Load Cell</div>
+                    <input type="range" id="weightSlider" min="0" max="500" th:value="${storageUnit != null ? storageUnit.currentWeight : 120.0}" oninput="updateWeightDisplay(this.value)">
+                </div>
+                <button class="refill-btn" onclick="checkAndTriggerRefill()">Weight Limit Reached — Start Refill</button>
+            </div>
         </div>
     </div>
+    
+    <!-- Modal -->
+    <div id="donorModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('show')">
+        <div class="modal-dialog">
+            <div class="modal-header">ELIGIBLE DONORS FOUND</div>
+            <div class="modal-body">
+                <table th:if="${!eligibleDonors.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Blood Type</th>
+                            <th>Last Donation Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="donor : ${eligibleDonors}">
+                            <td th:text="${donor.name}"></td>
+                            <td th:text="${donor.bloodGroup}"></td>
+                            <td th:text="${donor.lastDonationDate}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p th:if="${eligibleDonors.isEmpty()}" style="text-align: center; color: #95a5a6;">No eligible donors found.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ok" onclick="document.getElementById('donorModal').classList.remove('show')">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') document.getElementById('donorModal').classList.remove('show');
+        // Temperature Chart
+        const ctx = document.getElementById('tempChart').getContext('2d');
+        const tempChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1', '2', '3', '4', '5', '6', '7', '8'],
+                datasets: [{
+                    data: [3.8, 3.9, 4.0, 4.1, 4.2, 4.2, 4.2, 4.2],
+                    borderColor: '#00d2d3',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: true,
+                    backgroundColor: 'rgba(0, 210, 211, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false, min: 3, max: 5 }
+                }
+            }
         });
+
+        // CSRF Token
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        // Weight Update Logic
+        function updateWeightDisplay(val) {
+            document.getElementById('weightValue').innerText = parseFloat(val).toFixed(1);
+            
+            // Send update to backend (debounced in production, direct here for simplicity)
+            fetch('/api/update-weight', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                },
+                body: JSON.stringify({ weight: parseFloat(val) })
+            });
+            
+            // Update Depletion Logic Simulation
+            if (val < 50) {
+                 document.getElementById('depletionText').innerHTML = "CRITICAL LEVEL<br>Refill required immediately.";
+            } else {
+                 document.getElementById('depletionText').innerHTML = "PREDICTIVE DEPLETION: 00:08:45<br>until zero stock.";
+            }
+        }
+        
+        function checkAndTriggerRefill() {
+             // Logic to show modal
+             document.getElementById('donorModal').classList.add('show');
+        }
     </script>
 </body>
 </html>

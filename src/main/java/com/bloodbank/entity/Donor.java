@@ -19,13 +19,17 @@ public class Donor {
     @Column(name = "last_donation_date", nullable = false, length = 10)
     private String lastDonationDate;
 
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
     public Donor() {
     }
 
-    public Donor(String name, String bloodGroup, String lastDonationDate) {
+    public Donor(String name, String bloodGroup, String lastDonationDate, String phoneNumber) {
         this.name = name;
         this.bloodGroup = bloodGroup;
         this.lastDonationDate = lastDonationDate;
+        this.phoneNumber = phoneNumber;
     }
 
     public Long getId() {
@@ -58,5 +62,26 @@ public class Donor {
 
     public void setLastDonationDate(String lastDonationDate) {
         this.lastDonationDate = lastDonationDate;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getEligibilityStatus() {
+        if (lastDonationDate == null) {
+            return "Eligible";
+        }
+        java.time.LocalDate lastDate = java.time.LocalDate.parse(lastDonationDate);
+        java.time.LocalDate nextEligibleDate = lastDate.plusDays(90);
+        if (nextEligibleDate.isAfter(java.time.LocalDate.now())) {
+            return "Eligible on " + nextEligibleDate;
+        } else {
+            return "Eligible";
+        }
     }
 }

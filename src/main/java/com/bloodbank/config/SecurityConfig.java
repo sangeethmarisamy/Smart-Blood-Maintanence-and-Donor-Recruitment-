@@ -26,7 +26,7 @@ public class SecurityConfig {
         http
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/h2-console/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -37,7 +37,9 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
-                );
+                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
         return http.build();
     }
 
