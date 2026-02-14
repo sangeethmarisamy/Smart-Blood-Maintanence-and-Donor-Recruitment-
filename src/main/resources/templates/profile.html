@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Blood Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #1a1d23; --card: #252830; --sidebar: #1e2128; --text: #ecf0f1; --text-muted: #95a5a6; --border: #34495e; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: var(--sidebar); padding: 24px 0; }
+        .sidebar a { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: var(--text-muted); text-decoration: none; }
+        .sidebar a:hover, .sidebar a.active { color: #c0392b; background: rgba(192, 57, 43, 0.1); }
+        .sidebar .icon { width: 20px; height: 20px; background: var(--border); border-radius: 4px; opacity: 0.7; }
+        .content-area { flex: 1; display: flex; flex-direction: column; }
+        .header { padding: 20px 32px; border-bottom: 1px solid var(--border); }
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .main { flex: 1; padding: 24px 32px; }
+        .card { background: var(--card); border-radius: 12px; padding: 24px; border: 1px solid var(--border); }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-outline { background: transparent; color: #c0392b; border: 2px solid #c0392b; }
+        form { display: inline; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <a href="/dashboard"><span class="icon"></span>Dashboard</a>
+            <a href="/donors"><span class="icon"></span>Donor List</a>
+            <a href="/profile" class="active"><span class="icon"></span>Profile</a>
+            <form th:action="@{/logout}" method="post" style="margin-top: 24px; padding: 0 24px;">
+                <button type="submit" class="btn btn-outline" style="width: 100%;">Logout</button>
+            </form>
+        </aside>
+        <div class="content-area">
+            <header class="header"><h1>Profile</h1></header>
+            <main class="main">
+                <div class="card">
+                    <p class="text-muted" style="color: var(--text-muted);">Profile placeholder</p>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

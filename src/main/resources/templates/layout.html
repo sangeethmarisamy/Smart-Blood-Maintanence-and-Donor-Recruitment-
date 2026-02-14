@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'Blood Bank'">Blood Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1d23;
+            --bg-card: #252830;
+            --bg-sidebar: #1e2128;
+            --accent: #c0392b;
+            --accent-hover: #a93226;
+            --text: #ecf0f1;
+            --text-muted: #95a5a6;
+            --border: #34495e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-dark); color: var(--text); min-height: 100vh; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 220px; background: var(--bg-sidebar); padding: 24px 0; }
+        .sidebar a { display: block; padding: 12px 24px; color: var(--text-muted); text-decoration: none; transition: all 0.2s; }
+        .sidebar a:hover, .sidebar a.active { color: var(--accent); background: rgba(192, 57, 43, 0.1); }
+        .main { flex: 1; padding: 32px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: background 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+        .btn-outline:hover { background: rgba(192, 57, 43, 0.1); }
+        .card { background: var(--bg-card); border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-weight: 600; font-size: 0.85rem; }
+        .mb-4 { margin-bottom: 24px; }
+        .flex { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .text-muted { color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="layout" th:fragment="layout">
+        <aside class="sidebar">
+            <a href="/dashboard" th:classappend="${#httpServletRequest.requestURI == '/dashboard'} ? 'active'">Dashboard</a>
+            <a href="/donors" th:classappend="${#httpServletRequest.requestURI.startsWith('/donors') and !#httpServletRequest.requestURI.contains('eligible')} ? 'active'">All Donors</a>
+            <a href="/donors/eligible" th:classappend="${#httpServletRequest.requestURI.contains('eligible')} ? 'active'">Eligible Donors</a>
+            <form th:action="@{/logout}" method="post" style="margin-top: 24px; padding: 0 24px;">
+                <button type="submit" class="btn btn-outline" style="width: 100%;">Logout</button>
+            </form>
+        </aside>
+        <main class="main">
+            <div th:replace="~{::content}"></div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor List - Blood Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1a1d23;
+            --card: #252830;
+            --sidebar: #1e2128;
+            --accent: #c0392b;
+            --text: #ecf0f1;
+            --text-muted: #95a5a6;
+            --border: #34495e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 220px;
+            background: var(--sidebar);
+            padding: 24px 0;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            color: var(--accent);
+            background: rgba(192, 57, 43, 0.1);
+        }
+
+        .sidebar .icon {
+            width: 20px;
+            height: 20px;
+            background: var(--border);
+            border-radius: 4px;
+            opacity: 0.7;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .main {
+            flex: 1;
+            padding: 24px 32px;
+            overflow: auto;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        select {
+            padding: 10px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            margin-right: 12px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(192, 57, 43, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .empty {
+            color: var(--text-muted);
+            padding: 32px;
+            text-align: center;
+        }
+
+        form {
+            display: inline;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-dialog {
+            background: var(--card);
+            border-radius: 12px;
+            max-width: 520px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-header {
+            background: #2980b9;
+            color: white;
+            padding: 16px 24px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modal-body th,
+        .modal-body td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-body th {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            text-align: right;
+            border-top: 1px solid var(--border);
+        }
+
+        .modal-empty {
+            color: var(--text-muted);
+            padding: 24px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <a href="/dashboard"><span class="icon"></span>Dashboard</a>
+            <a href="/donors" class="active"><span class="icon"></span>Donor List</a>
+            <a href="/profile"><span class="icon"></span>Profile</a>
+            <form th:action="@{/logout}" method="post" style="margin-top: 24px; padding: 0 24px;">
+                <button type="submit" class="btn btn-outline" style="width: 100%;">Logout</button>
+            </form>
+        </aside>
+        <div class="content-area">
+            <header class="header">
+                <h1>Donor List</h1>
+            </header>
+            <main class="main">
+                <div class="card">
+                    <div style="margin-bottom: 16px;">
+                        <button type="button" class="btn btn-outline"
+                            onclick="document.getElementById('donorModal').classList.add('show')">View Eligible
+                            Donors</button>
+                    </div>
+                    <form th:action="@{/donors}" method="get" class="filter-form">
+                        <label for="bloodType">Filter by blood type:</label>
+                        <select name="bloodType" id="bloodType">
+                            <option value="">All types</option>
+                            <option th:each="bt : ${bloodTypes}" th:value="${bt}" th:text="${bt}"
+                                th:selected="${bt == selectedBloodType}"></option>
+                        </select>
+                        <button type="submit" class="btn">Apply</button>
+                    </form>
+
+                    <table th:if="${!donors.isEmpty()}">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Blood Type</th>
+                                <th>Last Donation Date</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="donor : ${donors}">
+                                <td th:text="${donor.name}"></td>
+                                <td th:text="${donor.bloodGroup}"></td>
+                                <td th:text="${donor.lastDonationDate}"></td>
+                                <td th:text="${donor.phoneNumber}"></td>
+                                <td>
+                                    <span th:text="${donor.eligibilityStatus}"
+                                        th:style="${donor.eligibilityStatus == 'Eligible' ? 'color: #2ecc71; font-weight: 600;' : 'color: #e74c3c;'}">
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p th:if="${donors.isEmpty()}" class="empty">No donors found.</p>
+                </div>
+
+                <!-- Eligible Donors Popup -->
+                <div id="donorModal" class="modal-overlay"
+                    onclick="if(event.target===this) this.classList.remove('show')">
+                    <div class="modal-dialog" onclick="event.stopPropagation()">
+                        <div class="modal-header">ELIGIBLE DONORS FOUND</div>
+                        <div class="modal-body">
+                            <table th:if="${!eligibleDonors.isEmpty()}">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Blood Type</th>
+                                        <th>Last Donation Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="donor : ${eligibleDonors}">
+                                        <td th:text="${donor.name}"></td>
+                                        <td th:text="${donor.bloodGroup}"></td>
+                                        <td th:text="${donor.lastDonationDate}"></td>
+                                        <td th:text="${donor.phoneNumber}"></td>
+                                        <td>
+                                            <span th:text="${donor.eligibilityStatus}"
+                                                th:style="${donor.eligibilityStatus == 'Eligible' ? 'color: #2ecc71; font-weight: 600;' : 'color: #e74c3c;'}">
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p th:if="${eligibleDonors.isEmpty()}" class="modal-empty">No eligible donors found.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn"
+                                onclick="document.getElementById('donorModal').classList.remove('show')">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') document.getElementById('donorModal').classList.remove('show');
+        });
+    </script>
+</body>
+
+</html>
