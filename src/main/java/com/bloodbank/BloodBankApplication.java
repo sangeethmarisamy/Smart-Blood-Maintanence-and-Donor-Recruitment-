@@ -9,6 +9,5 @@ public class BloodBankApplication {
     public static void main(String[] args) {
         SpringApplication.run(BloodBankApplication.class, args);
     }
-    
 }
 
