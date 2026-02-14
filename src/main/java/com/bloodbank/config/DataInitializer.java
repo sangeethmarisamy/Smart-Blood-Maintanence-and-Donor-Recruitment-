@@ -21,8 +21,6 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        donorService.seedSampleDonorsIfEmpty();
-        userService.seedAdminIfEmpty();
-        bloodStockService.seedStockIfEmpty();
+        // Data initialization removed - to be completed later
     }
 }
